@@ -1,0 +1,66 @@
+.download-btn {
+    height: 60px;
+}
+
+.download-btn .anticon {
+    padding: 10px;
+    background: #4aa181;
+    border-radius: 10px;
+    color: white;
+    margin: 10px 0;
+}
+
+.download-btn svg {
+    width: 1.4rem;
+    height: 1.4rem;
+}
+
+
+
+.human-message {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+.human-chat {
+    padding-bottom: .625rem;
+    padding-top: .625rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    background-color: hsla(0, 0%, 91%, .5);
+    border-radius: 1.5rem;
+    max-width: 70%;
+}
+
+.bot-icon {
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: white;
+    width: 2rem;
+    height: 2rem;
+    position: relative;
+}
+
+.agent-name {
+    position: absolute;
+    right: calc(100% + .5rem);
+    line-height: 2rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Token fade-in animation */
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+}

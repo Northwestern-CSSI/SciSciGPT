@@ -1,0 +1,116 @@
+# Core Data Manipulation & Scientific Libraries
+numpy
+pandas
+polars
+scipy
+statsmodels
+xarray
+xarray-einstats
+arviz
+modin
+
+# Machine Learning & Deep Learning
+scikit-learn
+xgboost
+lightgbm
+catboost
+torch
+torchvision
+torchaudio
+pytorch-lightning
+tensorflow_cpu
+keras
+jax
+jaxlib
+flax
+pymc
+pyro-ppl
+gpytorch
+botorch
+optuna
+hyperopt
+ray
+feature-engine
+category-encoders
+imbalanced-learn
+sklearn-pandas
+yellowbrick
+shap
+eli5
+interpret
+captum
+
+# Data Visualization
+matplotlib
+seaborn
+plotly
+dash
+bokeh
+altair
+folium
+plotnine
+matplotlib-venn
+wordcloud
+
+# Natural Language Processing & LLMs
+nltk
+spacy
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
+gensim
+transformers
+huggingface-hub
+sentencepiece
+
+# Data Ingestion & Web Scraping
+requests
+httpx
+aiohttp
+beautifulsoup4
+lxml
+html5lib
+selenium
+duckduckgo_search
+pdfminer.six
+pdfplumber
+PyMuPDF
+pytesseract
+pdf2image
+camelot-py
+tabula
+docx2txt
+python-docx
+
+# File Handling & Formats
+openpyxl
+pyxlsb
+XlsxWriter
+odfpy
+pyarrow
+tables
+h5py
+fsspec
+
+# Geospatial Analysis
+geopandas
+shapely
+fiona
+rasterio
+geopy
+basemap
+xyzservices
+
+# Network & Graph Analysis
+networkx
+python-igraph
+networkit
+cdlib
+infomap
+python-louvain
+nxviz
+pyvis
+graphviz
+
+# Specialized Analytical Tools
+sympy
+PuLP
+SALib

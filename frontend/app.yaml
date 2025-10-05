@@ -1,0 +1,19 @@
+runtime: nodejs18
+env: standard
+
+instance_class: F1
+
+automatic_scaling:
+  min_idle_instances: 0
+  max_idle_instances: 1
+  min_pending_latency: 3000ms
+  max_pending_latency: automatic
+  max_instances: 1
+
+handlers:
+- url: /.*
+  script: auto
+  secure: always
+
+env_variables:
+  NODE_ENV: 'production'

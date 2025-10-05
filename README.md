@@ -1,26 +1,49 @@
-<h1 align="center"> <em>SciSciGPT</em>: Advancing Human-AI Collaboration in the Science of Science </h1>
+<h1 align="center">
+  🧬 <em>SciSciGPT</em>
+</h1>
+
+<h3 align="center">Advancing Human-AI Collaboration in the Science of Science</h3>
 
 <p align="center">
   <img src="public/sciscigpt.png" style="width: 100%" alt="SciSciGPT Diagram" />
 </p>
 
+<p align="center">
+  <a href="https://github.com/Northwestern-CSSI/SciSciGPT/stargazers">
+    <img src="https://img.shields.io/github/stars/Northwestern-CSSI/SciSciGPT?style=social" alt="GitHub Stars">
+  </a>
+  <a href="https://github.com/Northwestern-CSSI/SciSciGPT/network/members">
+    <img src="https://img.shields.io/github/forks/Northwestern-CSSI/SciSciGPT?style=social" alt="GitHub Forks">
+  </a>
+  <a href="https://github.com/Northwestern-CSSI/SciSciGPT/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
+  </a>
+  <a href="https://arxiv.org/abs/2504.05559">
+    <img src="https://img.shields.io/badge/arXiv-2504.05559-b31b1b.svg" alt="arXiv">
+  </a>
+</p>
 
+<p align="center">
+  <a href="https://sciscigpt.com">
+    <img src="https://img.shields.io/badge/🚀_Try_Live_Demo-4f2984?style=for-the-badge&logoColor=white" alt="Live Demo">
+  </a>
+  <a href="https://arxiv.org/abs/2504.05559">
+    <img src="https://img.shields.io/badge/📄_Read_Paper-4f2984?style=for-the-badge&logoColor=white" alt="Paper">
+  </a>
+  <a href="https://github.com/Northwestern-CSSI/SciSciGPT">
+    <img src="https://img.shields.io/badge/⭐_GitHub-4f2984?style=for-the-badge&logoColor=white" alt="GitHub">
+  </a>
+</p>
+
+---
+
+<br>
 
 *SciSciGPT* is an AI collaborator designed to advance human-AI collaboration in the science of science (SciSci) field. As scientific research becomes increasingly complex and data-intensive, researchers face growing technical barriers that limit accessibility and efficiency. *SciSciGPT* addresses these challenges by leveraging recent advances in large language models and AI agents to create a comprehensive research assistant.
 
-The system offers both a public chat interface at https://sciscigpt.com and a fully open-source implementation at https://github.com/Northwestern-CSSI/SciSciGPT. *SciSciGPT* integrates multiple research capabilities: retrieving relevant SciSci publications, extracting data from complex databases, conducting advanced analytics, creating visualizations, and evaluating its own outputs. This seamless AI-powered workflow lowers technical barriers, enhances research efficiency, and enables new modes of human-AI collaboration.
+The system offers both a **public chat interface** at [sciscigpt.com](https://sciscigpt.com) and a **fully open-source implementation** on GitHub. *SciSciGPT* integrates multiple research capabilities: retrieving relevant SciSci publications, extracting data from complex databases, conducting advanced analytics, creating visualizations, and evaluating its own outputs. This seamless AI-powered workflow lowers technical barriers, enhances research efficiency, and enables new modes of human-AI collaboration.
 
-<p align="center">
-  <a href="https://github.com/Northwestern-CSSI/SciSciGPT">
-    <img src="https://img.shields.io/badge/📝_HomePage-4f2984?style=for-the-badge&logoColor=white" alt="HomePage">
-  </a>
-  <a href="https://arxiv.org/abs/2504.05559">
-    <img src="https://img.shields.io/badge/📄_Paper-4f2984?style=for-the-badge&logoColor=white" alt="Paper">
-  </a>
-  <a href="https://sciscigpt.com">
-    <img src="https://img.shields.io/badge/✨_Chat Interface-4f2984?style=for-the-badge&logoColor=white" alt="Chat Interface">
-  </a>
-</p>
+<br>
 
 
 

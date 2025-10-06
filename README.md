@@ -5,6 +5,7 @@
 </p>
 
 
+
 <p align="center">
   <a href="https://github.com/Northwestern-CSSI/SciSciGPT/stargazers">
     <img src="https://img.shields.io/github/stars/Northwestern-CSSI/SciSciGPT?style=social" alt="GitHub Stars">
@@ -13,12 +14,13 @@
     <img src="https://img.shields.io/github/forks/Northwestern-CSSI/SciSciGPT?style=social" alt="GitHub Forks">
   </a>
   <a href="https://github.com/Northwestern-CSSI/SciSciGPT/blob/main/LICENSE">
-    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
+    <img src="https://img.shields.io/badge/License-AGPL--3.0-green.svg" alt="License">
   </a>
   <a href="https://arxiv.org/abs/2504.05559">
     <img src="https://img.shields.io/badge/arXiv-2504.05559-b31b1b.svg" alt="arXiv">
   </a>
 </p>
+
 
 
 <p align="center">
@@ -32,6 +34,7 @@
     <img src="https://img.shields.io/badge/⭐_GitHub-4f2984?style=for-the-badge&logoColor=white" alt="GitHub">
   </a>
 </p>
+
 
 
 ---
@@ -66,7 +69,7 @@ The system comprises five specialized agents:
 
 - **AI Orchestration**: [LangChain](https://www.langchain.com/) & [LangGraph](https://www.langchain.com/langgraph) for multi-agent workflow coordination
 - **LLM Provider**: [Google Cloud Vertex AI](https://cloud.google.com/vertex-ai) with Claude models (Anthropic)
-- **Text Embedding**: Text embeddings (text-embedding-3-large) for vector search in *LiteratureSpecialist*
+- **Text Embedding**: Text embeddings for vector search in *LiteratureSpecialist* and *DatabaseSpecialist*
 - **Application Framework**: FastAPI with [LangServe](https://python.langchain.com/docs/langserve) for API endpoints
 
 ### Data & Storage Services
@@ -85,7 +88,6 @@ The system executes code in isolated sandboxes with persistent state management 
 
 ### System Requirements
 
-- **System**: Ubuntu 24.04 LTS
 - **Memory**: 16GB+ RAM recommended for full functionality
 - **Storage**: 100GB+ for dependencies and datasets
 - **Network**: Internet connection for API calls to LLM providers
@@ -94,91 +96,15 @@ The system executes code in isolated sandboxes with persistent state management 
 
 ## Backend Setup Guideline
 
-### Step 1: Google Cloud Platform Setup
-
-*SciSciGPT* leverages three core Google Cloud Platform services to provide comprehensive research capabilities:
-
-- **Vertex AI** provides the backbone LLM API service, enabling *SciSciGPT* to utilize Anthropic Claude models through Google's Vertex AI platform for natural language understanding, reasoning, and generation across all specialist agents
-- **BigQuery** serves as the data warehouse for SciSciNet, allowing *SciSciGPT*'s *DatabaseSpecialist* to view, read, and execute SQL queries against large-scale scholarly datasets containing publications, citations, authors, and institutional data
-- **Cloud Storage** hosts and manages file artifacts including BigQuery query results, *AnalyticsSpecialist*'s intermediate computational outputs, and generated visualizations, enabling seamless file communication between frontend and backend systems through public URLs
-
-#### GCP Project
-
-Create a Google Cloud Platform Project (`your-gcp-project-id`)
-
-#### BigQuery Database
-
-Enable the [BigQuery API](https://cloud.google.com/bigquery/docs/reference/rest) in your GCP project and create a BigQuery dataset (`your-dataset-name`) to store your SciSci research data.
-
-#### Cloud Storage
-
-1. Create a Google Cloud Storage bucket (`your-gcs-bucket-name`) in your GCP project
-2. Configure the bucket for public access (refer to [Make data public](https://cloud.google.com/storage/docs/access-control/making-data-public) for more details):
-   - Go to Cloud Storage > Browser in GCP Console
-   - Select your bucket > Permissions tab
-   - Add principal: `allUsers` and assign role: `Storage Object Viewer`
-3. Files, including SQL query results, intermediate outputs, and visualizations will be uploaded to GCS and served via public URLs
-
-#### Vertex AI
-
-Enable the [Vertex AI API](https://cloud.google.com/vertex-ai/docs/reference/rest) in `your-gcp-project-id` project and enable Anthropic Claude models (for example, `claude-3-5-sonnet-v2@20241022`) of required version in Vertex AI's Model Garden.
-
-#### Service Account
-
-Create a service account (refer to [Create service accounts](https://cloud.google.com/iam/docs/service-accounts-create)) and grant the necessary IAM roles (refer to [Grant an IAM role](https://cloud.google.com/iam/docs/grant-role-console)). The service account requires the following roles:
-
-- `BigQuery Data Viewer`: Permission to read datasets and tables in Google BigQuery;
-- `BigQuery Job User`: Permission to create query jobs in Google BigQuery API;
-- `BigQuery Read Session User`: Permission to use BigQuery Storage API;
-- `Storage Object Admin`: Permissions for file read and uploads for GCS bucket;
-- `Vertex AI User`: Permission for LLM querying and textual embedding;
-- `Owner`;
-
-Then, create and download the service account [JSON credential key file](https://cloud.google.com/iam/docs/keys-list-get), and save as `.google_application_credentials.json` in the `backend` directory and `datasets` directory, should be in the format of the example `google_application_credentials.json` key.
-
-#### SciSciNet Database Construction
-
-Execute the `datasets/SciSciNet.ipynb` notebook (by configuring the `project_id` and `dataset_id` within the notebook), which will automatically download all SciSciNet tables from [SciSciGPT-SciSciNet HuggingFace repository](https://huggingface.co/datasets/ErzhuoShao/SciSciGPT-SciSciNet), and upload to Google BigQuery with the right schema, table description, and column description.
-
-The final dataset should include 19 tables: `institutions`, `nct`, `newsfeed`, `nih`, `nsf`, `paper_author_affiliations`, `paper_citations`, `paper_fields`, `paper_nct`, `paper_newsfeed`, `paper_nih`, `paper_nsf`, `paper_patents`, `paper_twitter`, `papers`, `patents`, and `twitter`, providing comprehensive coverage of scholarly publications, citations, author affiliations, funding sources, patents, and social media engagement data for Science of Science research.
-
----
-
-### Step 2: Pinecone Vector Database Setup
-
-*SciSciGPT* uses Pinecone as a vector database to host the SciSciCorpus, a comprehensive collection of scientific literature. The corpus is indexed using vector embeddings to enable semantic search capabilities, allowing the *LiteratureSpecialist* agent to perform Retrieval-Augmented Generation (RAG) operations for Science of Science research.
-
-#### Setup Steps
-
-1. Create a Pinecone account at https://www.pinecone.io;
-2. Create an index named `your-pinecone-index-name` with the following configuration:
-   - Dimensions: 3072 (compatible with OpenAI's text-embedding-3-large model)
-   - Metric: Cosine similarity
-3. Generate a Pinecone API key with full permissions from your Pinecone dashboard ([Manage API keys](https://docs.pinecone.io/guides/projects/manage-api-keys));
-4. Obtain an OpenAI API key for text embedding generation ([OpenAI API keys](https://platform.openai.com/api-keys)).
-
-#### SciSciCorpus Database Construction
-
-Execute the `datasets/SciSciCorpus.ipynb` notebook to build your vector database. You will need to configure your OpenAI API key and Pinecone API key within the notebook. The notebook performs the following operations:
-
-1. Downloads the SciSciCorpus dataset from the [SciSciGPT-SciSciCorpus HuggingFace repository](https://huggingface.co/datasets/ErzhuoShao/SciSciGPT-SciSciCorpus)
-2. Generates vector embeddings for research paper abstracts using OpenAI's text-embedding-3-large model
-3. Indexes each document with its embedding vector, along with metadata like full textual content and bibliometric information
-4. Uploads the indexed data to your Pinecone vector database
-
-The resulting `your-pinecone-index-name` vector database will contain semantically searchable scientific literature with associated metadata, enabling the *LiteratureSpecialist* to perform sophisticated RAG-based research queries and literature discovery.
-
----
-
-### Step 3: Dependencies Installation
+### Step 1: Install Dependencies
 
 Our dependency installation is divided into two parts:
 
-#### Part 1: Minimal Setup (Required)
+##### Minimal Setup (Required)
 
 The minimal setup is based on [Anaconda](https://anaconda.org) and includes only the essential packages needed to launch and run *SciSciGPT*, including LangChain-related packages for agent orchestration, Google BigQuery client libraries for database access, Pinecone client for vector database operations, and R and Julia environments configured via conda-forge.
 
-Within the Anaconda environment, the *AnalyticsSpecialist* uses a unified [jupyter_client](backend/func/jupyter_async.py) interface with rpy2 and juliacall, which allows the *AnalyticsSpecialist* to execute R and Julia code within the same Python-based environment, enabling seamless multi-language scientific computing. Completing Part 1 is sufficient to get *SciSciGPT* up and running.
+Within the Anaconda environment, the *AnalyticsSpecialist* uses a unified [jupyter_client](backend/func/jupyter.py) interface with rpy2 and juliacall, which allows the *AnalyticsSpecialist* to execute R and Julia code within the same Python-based environment, enabling seamless multi-language scientific computing. Completing Part 1 is sufficient to get *SciSciGPT* up and running.
 
 To install the minimal dependencies, navigate to the backend directory and run:
 
@@ -200,7 +126,7 @@ conda install -c conda-forge julia -y
 pip install juliacall
 ```
 
-#### Part 2: Comprehensive Package Installation (Optional)
+##### Comprehensive Package Installation (Optional)
 
 The second part aims to ensure the *AnalyticsSpecialist* can handle a wide variety of computational tasks. Since the *AnalyticsSpecialist* may generate arbitrary code during execution, we want to minimize the likelihood of runtime failures due to missing packages. Therefore, we install a comprehensive collection of Python, R, and Julia packages that cover most common scientific computing scenarios.
 
@@ -219,29 +145,99 @@ This script will automatically install all packages within the existing `sciscig
 - R packages from `requirements-sandbox-r.R`
 - Julia packages from `requirements-sandbox-julia.jl`
 
+------
+
+### Step 2: Configure Google Cloud Platform
+
+*SciSciGPT* leverages three core Google Cloud Platform services to provide comprehensive research capabilities:
+
+- **Vertex AI** provides the backbone LLM API service, enabling *SciSciGPT* to utilize Anthropic Claude models through Google's Vertex AI platform for natural language understanding, reasoning, and generation across all specialist agents
+- **BigQuery** serves as the data warehouse for SciSciNet, allowing *SciSciGPT*'s *DatabaseSpecialist* to view, read, and execute SQL queries against large-scale scholarly datasets containing publications, citations, authors, and institutional data
+- **Cloud Storage** hosts and manages file artifacts including BigQuery query results, *AnalyticsSpecialist*'s intermediate computational outputs, and generated visualizations, enabling seamless file communication between frontend and backend systems through public URLs
+
+**GCP Project:** Create a Google Cloud Platform Project (`GCP_PROJECT_ID`)
+
+**BigQuery Database:** Enable the [BigQuery API](https://cloud.google.com/bigquery/docs/reference/rest) in your GCP project and create a BigQuery dataset (`BIGQUERY_DATASET_ID`) to store your SciSci research data.
+
+**Cloud Storage:**
+
+1. Create a Google Cloud Storage bucket (`GCS_BUCKET_NAME`) in your GCP project
+2. Configure the bucket for public access (refer to [Make data public](https://cloud.google.com/storage/docs/access-control/making-data-public) for more details):
+   - Go to Cloud Storage > Browser in GCP Console
+   - Select your bucket > Permissions tab
+   - Add principal: `allUsers` and assign role: `Storage Object Viewer`
+3. Files, including SQL query results, intermediate outputs, and visualizations will be uploaded to GCS and served via public URLs
+
+**Vertex AI:** Enable the [Vertex AI API](https://cloud.google.com/vertex-ai/docs/reference/rest) in `GCP_PROJECT_ID` project and enable Anthropic Claude models (for example, `claude-3-5-sonnet-v2@20241022`) of required version in Vertex AI's Model Garden.
+
+**Service Account: **Create a service account (refer to [Create service accounts](https://cloud.google.com/iam/docs/service-accounts-create)) and grant the necessary IAM roles (refer to [Grant an IAM role](https://cloud.google.com/iam/docs/grant-role-console)). The service account requires the following roles:
+
+- `BigQuery Data Viewer`: Permission to read datasets and tables in Google BigQuery;
+- `BigQuery Job User`: Permission to create query jobs in Google BigQuery API;
+- `BigQuery Read Session User`: Permission to use BigQuery Storage API;
+- `Storage Object Admin`: Permissions for file read and uploads for GCS bucket;
+- `Vertex AI User`: Permission for LLM querying and textual embedding;
+
+Then, create and download the service account [JSON credential key file](https://cloud.google.com/iam/docs/keys-list-get), and save as `.google_application_credentials.json` in the `backend` directory, should be in the format of the example `google_application_credentials.json` key.
+
 ---
 
-### Step 4: Environment Variables Setup
+### Step 3: Configure Vector Database
+
+*SciSciGPT* uses Pinecone as a vector database to host the SciSciCorpus, a comprehensive collection of scientific literature. The corpus is indexed using vector embeddings to enable semantic search capabilities, allowing the *LiteratureSpecialist* agent to perform Retrieval-Augmented Generation (RAG) operations for Science of Science research. Moreover, *SciSciGPT* uses Pinecone as a vector database to host standardized institution and field names from SciSciNet, enabling semantic search capabilities for name disambiguation and standardization. This allows the *DatabaseSpecialist* agent to perform fuzzy matching and find the most appropriate standardized names when users provide variations or partial matches.
+
+**Setup Steps**
+
+1. Create a Pinecone account at https://www.pinecone.io;
+2. Create an index named `NAME_SEARCH_INDEX` with the following configuration:
+   - Dimensions: 1536 (compatible with OpenAI's text-embedding-3-small model)
+   - Metric: Cosine similarity
+3. Create an index named `SCISCICORPUS_INDEX` with the following configuration:
+   - Dimensions: 3072 (compatible with OpenAI's text-embedding-3-large model)
+   - Metric: Cosine similarity
+4. Generate a Pinecone API key with full permissions from your Pinecone dashboard ([Manage API keys](https://docs.pinecone.io/guides/projects/manage-api-keys));
+5. Obtain an OpenAI API key for text embedding generation ([OpenAI API keys](https://platform.openai.com/api-keys)).
+
+---
+
+### Step 4: Configure Environment Variables
 
 Within the `backend` directory, create a `.env` file using `.env.example` as template:
 
 ```bash
-OPENAI_API_KEY=your-openai-api-key
-
 GOOGLE_APPLICATION_CREDENTIALS=.google_application_credentials.json
-GOOGLE_BIGQUERY_URI=bigquery://your-gcp-project-id/your-bigquery-dataset-id
+GOOGLE_BIGQUERY_URI=bigquery://GCP_PROJECT_ID/BIGQUERY_DATASET_ID
 
 LOCAL_STORAGE_PATH=/tmp/sandbox
-GCS_BUCKET_NAME=your-gcs-bucket-name
-GCS_BUCKET_URL=https://storage.googleapis.com/your-gcs-bucket-name
+GCS_BUCKET_NAME=GCS_BUCKET_NAME
+GCS_BUCKET_URL=https://storage.googleapis.com/GCS_BUCKET_NAME
 
-PINECONE_API_KEY=your-pinecone-api-key
-PINECONE_INDEX_NAME=your-pinecone-index-name
+PINECONE_API_KEY=PINECONE_API_KEY
+OPENAI_API_KEY=OPENAI_API_KEY
+SCISCICORPUS_INDEX=SCISCICORPUS_INDEX
+SCISCICORPUS_NAMESPACE=SCISCICORPUS_NAMESPACE
+NAME_SEARCH_INDEX=NAME_SEARCH_INDEX
 ```
 
 ---
 
-### Step 5: Running the Application
+### Step 5: Construct Databases
+
+#### SciSciNet Relational Database
+
+Execute the `backend/SciSciNet-Relational.ipynb` notebook, which will automatically download all SciSciNet tables from the [SciSciGPT-SciSciNet HuggingFace repository](https://huggingface.co/datasets/ErzhuoShao/SciSciGPT-SciSciNet) and upload them to Google BigQuery with proper schema definitions, table descriptions, and column descriptions. The final dataset comprises 19 comprehensive tables: `authors`, `fields`, `institutions`, `nct`, `newsfeed`, `nih`, `nsf`, `paper_author_affiliations`, `paper_citations`, `paper_fields`, `paper_nct`, `paper_newsfeed`, `paper_nih`, `paper_nsf`, `paper_patents`, `paper_twitter`, `papers`, `patents`, and `twitter`. This collection provides extensive coverage of the innovation ecosystem, enabling comprehensive Science of Science research capabilities.
+
+#### SciSciNet Vector Database
+
+Execute the `backend/SciSciNet-Vector.ipynb` notebook, which will automatically download the `fields` and `institutions` tables from the SciSciNet [SciSciGPT-SciSciNet HuggingFace repository](https://huggingface.co/datasets/ErzhuoShao/SciSciGPT-SciSciNet). The notebook will automatically generate embeddings for `field_name` and `institution_name` using OpenAI's `text-embedding-3-small` model, indexing each entity with its embedding vector along with other metadata. The resulting `NAME_SEARCH_INDEX` vector database serves the name disambiguation and standardization capabilities of the *DatabaseSpecialist*.
+
+#### SciSciCorpus Vector Database
+
+Execute the `backend/SciSciCorpus.ipynb` notebook to build your vector database. The notebook downloads the SciSciCorpus dataset from the [SciSciGPT-SciSciCorpus HuggingFace repository](https://huggingface.co/datasets/ErzhuoShao/SciSciGPT-SciSciCorpus), generates vector embeddings for research paper abstracts using OpenAI's `text-embedding-3-large` model, indexes each document with its embedding vector along with metadata like full textual content and bibliometric information, and uploads the indexed data to your Pinecone vector database. The resulting `SCISCICORPUS_INDEX` vector database will contain semantically searchable scientific literature with associated metadata, enabling the *LiteratureSpecialist* to perform sophisticated RAG-based research queries and literature discovery.
+
+------
+
+### Step 6: Run the Backend
 
 Deploy the Backend of *SciSciGPT*:
 
@@ -255,27 +251,7 @@ The API will be available at:
 - Main *SciSciGPT* agent: `http://localhost:8080/sciscigpt`
 - Individual tools: `http://localhost:8080/redoc`
 
-The backend implements a multi-agent system with 5 agents:
-
-#### Agents
-
-- ***ResearchManager***: Orchestrates workflow and delegates tasks
-- ***LiteratureSpecialist***: RAG-based literature search and analysis
-- ***DatabaseSpecialist***: SQL/Neo4j data extraction and preprocessing
-- ***AnalyticsSpecialist***: Python/R/Julia code execution and visualization
-- ***EvaluationSpecialist***: Multi-level quality control and validation
-
-#### Tools
-
-- `search_literature`: Semantic search across SciSci papers (Pinecone + RAG)
-- `sql_list_table`: List BigQuery database tables
-- `sql_get_schema`: Retrieve table schemas with samples
-- `sql_query`: Execute SQL queries and return results
-- `neo4j_query`: Execute Cypher queries on graph database
-- `search_name`: Entity name similarity matching
-- `python`: Execute Python code in persistent environment based on Jupyter sandbox
-- `r`: Execute R code in persistent environment based on Jupyter sandbox
-- `julia`: Execute Julia code in persistent environment based on Jupyter sandbox
+The backend implements *SciSciGPT* and using langserve to package *SciSciGPT*'s agent as an FastAPI which could be connect and invoked remotely using Langserve and support event streaming. `http://localhost:8080/sciscigpt` include the entry of the main *SciSciGPT* agent, while the entries of all other tools could be found at `http://localhost:8080/redoc`.
 
 ---
 
@@ -283,7 +259,7 @@ The backend implements a multi-agent system with 5 agents:
 
 **Software Service Ecosystem:** This is the frontend for *SciSciGPT*, an advanced LLM agent research assistant for the field of science of science (SciSci). This project is adapted from the [Vercel AI Chatbot](https://github.com/vercel/ai-chatbot) and is designed to be integrated with a LLM agent API backend supported by LangServe.
 
-### Features
+**Features:**
 
 - User-friendly interface for interacting with the *SciSciGPT* agent
 - Designed to connect with a LangServe-powered backend for LLM agent capabilities
@@ -296,7 +272,7 @@ The backend implements a multi-agent system with 5 agents:
 
 ## Frontend Setup Guideline
 
-### Step 1: Create KV Database for Chat History Storage
+### Step 1: Create KV Database
 
 Create a Redis KV database using Upstash at https://console.upstash.com/redis. The frontend code will automatically handle user authentication and chat history management. *SciSciGPT* uses Upstash's Redis database, which provides a hash table-based database for storing and retrieving information based on user ID and chat history ID.
 
@@ -307,7 +283,7 @@ Follow these steps:
 
 ---
 
-### Step 2: Environment Variables Setup
+### Step 2: Configure Environment Variables
 
 1. Update your environment variables (`KV_URL`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `KV_REST_API_READ_ONLY_TOKEN`) in the `.env.local` file (using `.env.example` as a template) with the credentials provided by Upstash
 
@@ -317,14 +293,30 @@ Follow these steps:
 
 3. Configure authentication and deployment URLs:
    - `NEXTAUTH_SECRET`: Secret key for NextAuth.js authentication (default: `sciscigpt`)
-   - `NEXTAUTH_URL`: The URL where your frontend will be deployed (default: `https://localhost:3000` for local development)
+   - `NEXTAUTH_URL`: The URL where your frontend will be deployed (default: `http://localhost:3000` for local development)
    - For production deployment, update to your actual domain: `https://your-domain.com`
+
+``````bash
+KV_REST_API_READ_ONLY_TOKEN="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_xx-xxxxxxxxxxxxxx"
+KV_REST_API_TOKEN="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+KV_REST_API_URL="https://abcde-fghij-12345.upstash.io"
+KV_URL="redis://default:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@abcde-fghij-12345.upstash.io:1234"
+
+LANGSERVE_URL="http://localhost:8080/sciscigpt"
+LOCAL_STORAGE_PATH="/tmp/sandbox"
+
+NEXTAUTH_SECRET="sciscigpt"
+NEXTAUTH_URL="http://localhost:3000"
+
+ENABLE_REDIRECT="false"
+REDIRECT_TARGET="https://localhost:3000"
+``````
 
 ---
 
 ### Step 3: Setup Node.js Environment
 
-Install Node.js, pnpm, and all other required packages within `sciscigpt` environment using conda-forge.
+Install Node.js and pnpm, and all other required packages (in `frontend/package.json`) within `sciscigpt` environment using conda-forge.
 
 ```bash
 cd frontend
@@ -333,7 +325,7 @@ bash setup.sh
 
 ---
 
-### Step 4: Running the User Interface
+### Step 4: Run the Frontend
 
 Deploy *SciSciGPT* Frontend:
 
@@ -342,57 +334,31 @@ cd frontend
 bash start.sh
 ```
 
-The chat interface will be available at `http://localhost:3000`
+The user chat interface will be available at `http://localhost:3000`
 
 ---
 
 ## Trouble Shooting in Setup
+
 ### Common Configuration Issues
 
 #### Package Version Requirements
 
-**Important**: Do not modify the versions of packages that are explicitly specified in `backend/requirements.txt`. These version constraints are critical for system stability:
+> **Important**: Do not modify the versions of packages that are explicitly specified in `backend/requirements.txt` and `frontend/package.json`. These version constraints are critical for system stability:
 
-- **Google BigQuery packages**: Changing versions of BigQuery-related packages may cause:
-  - Loss of access to BigQuery databases
-  - Incomplete table displays
-  - Missing table column descriptions
-  - DatabaseSpecialist functionality failures
+**Changing of BigQuery-related packages versions** may cause loss of access to BigQuery databases, incomplete table displays (especially missing table column descriptions), and DatabaseSpecialist functionality failures. **Modifying Pinecone package** versions may result in the vector database connection issues or formatting issues and cause malfunctions of name search tool and literature search tool. For packages without explicit version constraints, versions can be adjusted based on your system requirements and compatibility needs.
 
-- **Pinecone packages**: Modifying Pinecone package versions may result in:
-  - Literature search tool malfunctions
-  - Complete LiteratureSpecialist system failures
-  - Vector database connection issues
+If the DatabaseSpecialist is not functioning properly, verify that **Google BigQuery Service Account** has proper IAM permissions, which should at least include all IAM roles mentioned above. Also, ensure that the `.google_application_credentials.json` of the corresponding roles is properly placed in the backend directory.
 
-- **Other packages**: For packages without explicit version constraints, versions can be adjusted based on your system requirements and compatibility needs.
+**Google Cloud Storage Configuration:** Ensure that your Google Cloud Storage bucket has public access enabled by granting access to `allUsers` for your storage bucket, which allows the frontend to display figures generated by SciSciGPT backend via public URLs, enables download links for generated tables and results, and without public access, generated visualizations and downloadable content will not be accessible from the frontend.
 
-#### Google Cloud Storage Configuration
+**LOCAL_STORAGE_PATH Configuration:** Ensure that the `LOCAL_STORAGE_PATH` environment variable is set to the same path in both the frontend and backend configurations. This synchronization is critical for proper file sharing and workspace management between the frontend interface and backend processing components.
 
-**Critical**: Ensure that your Google Cloud Storage bucket has public access enabled:
+------
 
-1. Grant access to `allUsers` for your storage bucket
-2. This allows the frontend to display figures generated by SciSciGPT backend via public URLs
-3. Enables download links for generated tables and results
-4. Without public access, generated visualizations and downloadable content will not be accessible from the frontend
+## Operating System Compatibility
 
-#### DatabaseSpecialist Issues
-
-If the DatabaseSpecialist is not functioning properly, check the following:
-
-1. **Google BigQuery Service Account**: Verify that the service account has proper IAM permissions:
-   - BigQuery Data Viewer
-   - BigQuery Job User
-   - Storage Object Viewer (if accessing data from Cloud Storage)
-
-2. **Credentials Loading**: Ensure that `.google_application_credentials.json` is:
-   - Properly placed in the backend directory
-   - Correctly loaded by the backend application
-   - Contains valid service account credentials with appropriate permissions
-
-3. **Environment Variables**: Verify that `GOOGLE_APPLICATION_CREDENTIALS` environment variable points to the correct credentials file path
-
-### Operating System Compatibility
-Since SciSciGPT's dependencies are built on the Anaconda foundation, the setup processes described above can be replicated across different operating systems. We have successfully tested the installation and operation procedures on multiple OS. We have verified the above process on Ubuntu 24.04 LTS, CentOS Stream 10, macOS Sequoia 15.5, and Windows 11. The above workflows have been verified to run successfully on these systems using Anaconda, and SciSciGPT operates normally across these tested platforms.
+*SciSciGPT* dependencies are built on [Anaconda](https://anaconda.org/), the setup processes described above can be replicated across different operating systems. We have successfully tested the above installation procedures and run successfully on Ubuntu 24.04 LTS, CentOS Stream 10, macOS Sequoia 15.5, and Windows 11 using Anaconda. *SciSciGPT* operates normally across these tested platforms.
 
 ---
 

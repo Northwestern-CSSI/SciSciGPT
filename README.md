@@ -391,6 +391,8 @@ If the DatabaseSpecialist is not functioning properly, check the following:
 
 3. **Environment Variables**: Verify that `GOOGLE_APPLICATION_CREDENTIALS` environment variable points to the correct credentials file path
 
+### Operating System Compatibility
+Since SciSciGPT's dependencies are built on the Anaconda foundation, the setup processes described above can be replicated across different operating systems. We have successfully tested the installation and operation procedures on multiple OS. We have verified the above process on Ubuntu 24.04 LTS, CentOS Stream 10, macOS Sequoia 15.5, and Windows 11. The above workflows have been verified to run successfully on these systems using Anaconda, and SciSciGPT operates normally across these tested platforms.
 
 ---
 

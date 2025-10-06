@@ -23,7 +23,6 @@ langchain_openai
 langchain_pinecone
 langgraph
 langserve
-pybigquery
 pydantic
 uvicorn
 

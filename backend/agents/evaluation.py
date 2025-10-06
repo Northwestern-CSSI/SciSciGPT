@@ -7,7 +7,6 @@ from agents.utils.messages import _extract_task_from_message, _extract_workflows
 from agents.utils.messages import _extract_xml_tags_from_text
 
 from agents.utils.images import _multimodal_message
-from langchain_core.load import dumps
 from agents.utils.messages import return_messages
 
 

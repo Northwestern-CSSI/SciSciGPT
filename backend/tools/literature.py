@@ -1,28 +1,26 @@
 from typing import Optional, Type, Literal
 from langchain.tools import BaseTool
 from langchain_core.vectorstores import VectorStore
-from langchain_core.language_models import BaseChatModel
 from pydantic import BaseModel, Field
 from typing import Annotated
 from langgraph.prebuilt import InjectedState
 import pandas as pd
-import json
-import re
-import logging
-import os
-from datetime import datetime
+import re, os
 
 from langchain_core.prompts import ChatPromptTemplate
-
+from langchain.hub import pull
+HyDE_pre_retrieval_xml = pull("erzhuoshao/sciscigpt_literature_specialist_hyde_pre")
+HyDE_post_retrieval_xml = pull("erzhuoshao/sciscigpt_literature_specialist_hyde_post")
 
 from dotenv import load_dotenv
 load_dotenv()
+sciscicorpus_index = os.getenv("SCISCICORPUS_INDEX")
+sciscicorpus_namespace = os.getenv("SCISCICORPUS_NAMESPACE")
+openai_api_key = os.getenv("OPENAI_API_KEY")
 
 import bibtexparser
 from bibtexparser.bwriter import BibTexWriter
 from bibtexparser.bibdatabase import BibDatabase
-
-namespace = "09012025"
 
 def __dict_to_bibtex__(entry):
 	entry_2 = {}
@@ -40,7 +38,6 @@ def __dict_to_bibtex__(entry):
 
 
 from langchain_core.output_parsers import JsonOutputParser, XMLOutputParser
-from prompts.prompts import HyDE_pre_retrieval_xml, HyDE_post_retrieval_xml
 
 def pre_retrieval_processing(llm, query):
     parser = XMLOutputParser()
@@ -65,7 +62,6 @@ def post_retrieval_processing_xml(llm, query, search_results):
 		"format_instructions": parser.get_format_instructions()
 	}).text()
 	
-	import re
 	references_match = re.search(r'<references>(.*?)</references>', response, re.DOTALL)
 	summary_match = re.search(r'<summary>(.*?)</summary>', response, re.DOTALL)
 	
@@ -139,24 +135,17 @@ def __search_and_format__(
 	if venue:
 		filter_conditions.append({"venue": venue})
 	filter_query = {"$and": filter_conditions} if filter_conditions else None
-
-	print("--------------------------------")
-	for i in search_keywords:
-		print(i)
-	print(filter_query)
-	print("--------------------------------")
 	
 	if type(search_keywords) == str:
 		search_keywords = [search_keywords]
 
 	df = []
 	for search_keyword in search_keywords:
-		output = PVS.similarity_search(search_keyword, filter=filter_query, k=k, namespace=namespace)
+		output = PVS.similarity_search(search_keyword, filter=filter_query, k=k, namespace=sciscicorpus_namespace)
 		df_temp = pd.DataFrame([i.metadata | {'text': i.page_content} for i in output])
 		# df_temp.authors = df_temp.authors.apply(lambda x: ', '.join(x[:-1]) + ', and ' + x[-1] if len(x) > 1 else x[0])
 		df.append(df_temp)
 	df = pd.concat(df, ignore_index=True)
-	df.to_parquet("data/search_results.parquet")
 	
 	if df.shape[0] > 0:
 		df = df.sort_values(['url', 'section_id'])
@@ -278,9 +267,9 @@ class SearchLiteratureAdvancedTool(BaseTool):
 from langchain_openai import OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 vs = PineconeVectorStore.from_existing_index(
-	embedding=OpenAIEmbeddings(model="text-embedding-3-large"),
-	index_name = "scisci-papers-08052025",
-	namespace = namespace,
+	embedding = OpenAIEmbeddings(model="text-embedding-3-large", api_key=openai_api_key),
+	index_name = sciscicorpus_index,
+	namespace = sciscicorpus_namespace,
 )
 
 
@@ -306,13 +295,4 @@ llm_dict = {
 	)
 }
 
-
-
-# vs = PineconeVectorStore.from_existing_index(
-# 	embedding=OpenAIEmbeddings(model="text-embedding-3-large"),
-# 	index_name="scisci-papers"
-# )
-
 search_literature_advanced_tool = SearchLiteratureAdvancedTool(vs=vs, llm_dict=llm_dict)
-search_literature_vanilla_tool = None
-# SearchLiteratureVanillaTool(vectorstore=literature_vectorstore)

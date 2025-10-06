@@ -11,7 +11,7 @@ class JupyterSandbox:
         self.working_dir = working_dir
         self.kernel_name = kernel_name
         self.sessions: Dict[str, Dict] = {}
-        self.tb_formatter = FormattedTB(mode='Plain', color_scheme='NoColor')
+        self.tb_formatter = FormattedTB(mode='Plain')
 
     def get_or_create_session(self, session_id: str) -> Dict:
         """
@@ -38,9 +38,12 @@ class JupyterSandbox:
                 'last_used': time.time()
             }
 
-            self.execute_code("%load_ext rpy2.ipython", session_id=session_id, cell_id=uuid.uuid4(), timeout=120)
-            self.execute_code("from juliacall import Main as jl", session_id=session_id, cell_id=uuid.uuid4(), timeout=120)
-            self.execute_code(f"import os; os.chdir('{self.working_dir}')", session_id=session_id, cell_id=uuid.uuid4(), timeout=120)
+            self.execute_code(
+                "%load_ext rpy2.ipython", session_id=session_id, cell_id=str(uuid.uuid4()), timeout=120)
+            self.execute_code(
+                "from juliacall import Main as jl", session_id=session_id, cell_id=str(uuid.uuid4()), timeout=120)
+            self.execute_code(
+                f"import os; os.chdir('{self.working_dir}')", session_id=session_id, cell_id=str(uuid.uuid4()), timeout=120)
         else:
             # Update last used timestamp
             self.sessions[session_id]['last_used'] = time.time()

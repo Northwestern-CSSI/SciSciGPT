@@ -225,6 +225,7 @@ export function render_event(event: any) {
 
 	if (name === "call_toolset") {
 		const content = JSON.parse(messages[0].kwargs.content[0].text)
+		console.log(content)
 		return __render_tool_response__(current, content)
 	}
 }

@@ -1,17 +1,18 @@
 from langchain.tools import BaseTool
 import re, os, json, uuid, base64
-import matplotlib.pyplot as plt
 
 from pydantic import BaseModel, Field
-from typing import Any, Dict, Optional, Sequence, Type, Union
-from langchain_core.tools import InjectedToolArg
+from typing import Type
 from typing_extensions import Annotated
 
-from func.jupyter_async import JupyterSandbox
+from func.jupyter import JupyterSandbox
 from func.image import upload_image
 
 from langgraph.prebuilt import InjectedState
 
+from dotenv import load_dotenv
+load_dotenv()
+working_dir = os.getenv("LOCAL_STORAGE_PATH")
 
 def _parse_jupyter_results(results: list[dict]) -> dict:
 	text_responses = [r for r in results if r['type'] == 'text']
@@ -24,7 +25,7 @@ def _parse_jupyter_results(results: list[dict]) -> dict:
 		response["images"] = []
 		for i in image_responses:
 			id = str(uuid.uuid4())
-			name = f"{os.getenv('SANDBOX_DIR')}/{id}.png"
+			name = f"{working_dir}/{id}.png"
 
 			with open(name, "wb") as f:
 				f.write(base64.b64decode(i["image_url"]["url"].split(",")[1]))
@@ -43,30 +44,23 @@ class RJupyterInput(BaseModel):
 class RJupyterTool(BaseTool):
 	name: str = "r"
 	description: str = """Execute R code in a persistent Jupyter environment. Input: Any valid R code snippet to run. Output: Standard output and error messages. Note: you need to call `print(p)` to render the figure."""
-	response_format: str = "content_and_artifact"
 	args_schema: Type[BaseModel] = RJupyterInput
 
 	sandbox: JupyterSandbox = None
 	timeout: int = 120  # seconds
 
 	def _run(self, query, state = None) -> str:
-		session_id = state["metadata"]["session_id"] if state else "test"
+		try:
+			session_id = state["metadata"]["session_id"] if state else "test"
 		
-		cell_id = uuid.uuid4()
-		results = self.sandbox.execute_code(f"%%R\n\n{query}", session_id=session_id, cell_id=cell_id, timeout=self.timeout)
-		results = [r for r in results if r["session_id"] == session_id and r["cell_id"] == cell_id]
+			cell_id = uuid.uuid4()
+			results = self.sandbox.execute_code(f"%%R\n\n{query}", session_id=session_id, cell_id=cell_id, timeout=self.timeout)
+			results = [r for r in results if r["session_id"] == session_id and r["cell_id"] == cell_id]
 
-		response = _parse_jupyter_results(results)
-		return response, response
-
-	async def _arun(self, query, state = None) -> str:
-		session_id = state["metadata"]["session_id"] if state else "test"
-		
-		cell_id = uuid.uuid4()
-		results = await self.sandbox.aexecute_code(f"%%R\n\n{query}", session_id=session_id, cell_id=cell_id, timeout=self.timeout)
-		results = [r for r in results if r["session_id"] == session_id and r["cell_id"] == cell_id]
-		response = _parse_jupyter_results(results)
-		return response, response
+			response = _parse_jupyter_results(results)
+		except Exception as e:
+			response = {"response": "{}: {}".format(type(e).__name__, str(e))}
+		return response
 
 
 
@@ -77,7 +71,6 @@ class PythonJupyterInput(BaseModel):
 class PythonJupyterTool(BaseTool):
 	name: str = "python"
 	description: str = """Execute Python code in a persistent Jupyter environment. Input: Any valid Python code snippet to run. Output: Standard output, error messages, and output images. Always prioritize to use matplotlib or seaborn to plot the figure. Note: Don't save output images to disk. Output images will be rendered automatically."""
-	response_format: str = "content_and_artifact"
 	
 	args_schema: Type[BaseModel] = PythonJupyterInput
 
@@ -86,23 +79,16 @@ class PythonJupyterTool(BaseTool):
 	timeout: int = 120  # seconds
 
 	def _run(self, query, state = None) -> str:
-		session_id = state["metadata"]["session_id"] if state else "test"
-		
-		cell_id = uuid.uuid4()
-		results = self.sandbox.execute_code(query, session_id=session_id, cell_id=cell_id, timeout=self.timeout)
-		results = [r for r in results if r["session_id"] == session_id and r["cell_id"] == cell_id]
-
-		response = _parse_jupyter_results(results)
-		return response, response
-
-	async def _arun(self, query, state = None) -> str:
-		session_id = state["metadata"]["session_id"] if state else "test"
-		
-		cell_id = uuid.uuid4()
-		results = await self.sandbox.aexecute_code(query, session_id=session_id, cell_id=cell_id, timeout=self.timeout)
-		results = [r for r in results if r["session_id"] == session_id and r["cell_id"] == cell_id]
-		response = _parse_jupyter_results(results)
-		return response, response
+		try:
+			session_id = state["metadata"]["session_id"] if state else "test"
+			
+			cell_id = uuid.uuid4()
+			results = self.sandbox.execute_code(query, session_id=session_id, cell_id=cell_id, timeout=self.timeout)
+			results = [r for r in results if r["session_id"] == session_id and r["cell_id"] == cell_id]
+			response = _parse_jupyter_results(results)
+		except Exception as e:
+			response = {"response": "{}: {}".format(type(e).__name__, str(e))}
+		return response
 
 
 
@@ -113,37 +99,30 @@ class JuliaJupyterInput(BaseModel):
 class JuliaJupyterTool(BaseTool):
 	name: str = "julia"
 	description: str = """Execute Julia code in a persistent Jupyter environment. Input: Any valid Julia code snippet to run. Output: Standard output and error messages. Note: you need to call `display(p)` to render the figure."""
-	response_format: str = "content_and_artifact"
 	args_schema: Type[BaseModel] = JuliaJupyterInput
 
 	sandbox: JupyterSandbox = None
 	timeout: int = 120  # seconds
 
 	def _run(self, query, state = None) -> str:
-		session_id = state["metadata"]["session_id"] if state else "test"
+		try:
+			session_id = state["metadata"]["session_id"] if state else "test"
 		
-		cell_id = uuid.uuid4()
-		results = self.sandbox.execute_code(
-			f"%%julia\n\n{query}", session_id=session_id, cell_id=cell_id, timeout=self.timeout)
-		results = [r for r in results if r["session_id"] == session_id and r["cell_id"] == cell_id]
-
-		response = _parse_jupyter_results(results)
-		return response, response
-
-	async def _arun(self, query, state = None) -> str:
-		session_id = state["metadata"]["session_id"] if state else "test"
-		
-		cell_id = uuid.uuid4()
-		results = await self.sandbox.aexecute_code(
-			f"%%julia\n\n{query}", session_id=session_id, cell_id=cell_id, timeout=self.timeout)
-		results = [r for r in results if r["session_id"] == session_id and r["cell_id"] == cell_id]
-		response = _parse_jupyter_results(results)
-		return response, response
+			cell_id = uuid.uuid4()
+			results = self.sandbox.execute_code(
+				f"%%julia\n\n{query}", session_id=session_id, cell_id=cell_id, timeout=self.timeout)
+			print(results)
+			results = [r for r in results if r["session_id"] == session_id and r["cell_id"] == cell_id]
+			response = _parse_jupyter_results(results)
+			print(response)
+		except Exception as e:
+			response = {"response": "{}: {}".format(type(e).__name__, str(e))}
+		return response
 
 
 # from func.env import python_env_setup, python_env_setup_string
 # python_env_setup() # Setup the python environment in system level
-jupyter_sandbox = JupyterSandbox(working_dir=os.getenv("LOCAL_STORAGE_PATH"))
+jupyter_sandbox = JupyterSandbox(working_dir=working_dir)
 python_jupyter_tool = PythonJupyterTool(sandbox=jupyter_sandbox)
 r_jupyter_tool = RJupyterTool(sandbox=jupyter_sandbox)
 julia_jupyter_tool = JuliaJupyterTool(sandbox=jupyter_sandbox)

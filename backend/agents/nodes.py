@@ -35,7 +35,7 @@ async def call_research_manager(llm_dict, tools, pruning_func, state: AgentState
 		])
 
 		tags = ["node_research_manager"]
-		response = await llm.bind_tools(list(tools_by_name.values())).ainvoke(
+		response = llm.bind_tools(list(tools_by_name.values())).invoke(
 			input_messages, config={"tags": tags})
 		response.tags = tags
 
@@ -71,7 +71,7 @@ async def call_specialist(llm_dict, tools, pruning_func, state: AgentState):
 		input_messages = pruning_func([ *system_messages, *historical_messages, *newest_messages ])
 
 		tags = [specialist]
-		response = await llm.bind_tools(tools).ainvoke( input_messages, config={ "tags": tags } )
+		response = llm.bind_tools(tools).invoke( input_messages, config={ "tags": tags } )
 		response.content = response.text()
 		response.tags = tags
 
@@ -147,7 +147,7 @@ async def call_specialistset(specialists, state: AgentState):
 		specialist_name, specialist_call_id, specialist_args = specialist_call["name"], specialist_call["id"], specialist_call["args"]
 
 		assert specialist_name in specialists_by_name, f"Invalid specialist: {specialist_name}. Only {list(specialists_by_name.keys())} are allowed."
-		results = await specialists_by_name[specialist_name].ainvoke(specialist_args)
+		results = specialists_by_name[specialist_name].invoke(specialist_args)
 
 		specialist_message = ToolMessage(content=[{"type": "text", "text": json.dumps(results)}], tool_call_id=specialist_call_id)
 		next = f"node_{specialist_name}"

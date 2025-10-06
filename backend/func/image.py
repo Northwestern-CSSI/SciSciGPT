@@ -1,5 +1,7 @@
-import base64
-import os
+import base64, os, requests
+from dotenv import load_dotenv
+load_dotenv()
+
 from func.gcp import upload_file_to_gcp
 
 workspace = os.getenv("LOCAL_STORAGE_PATH")
@@ -10,7 +12,7 @@ def load_image(image_path) -> dict:
 
     if image_path.startswith(('http://', 'https://')):
         # If it's a URL, fetch and encode the image
-        import requests
+        
         response = requests.get(image_path)
         response.raise_for_status()
         image_base64 = encode_image(response.content)
@@ -24,12 +26,7 @@ def load_image(image_path) -> dict:
 
 import uuid
 def upload_image(img: str, img_type: str='path'):
-
     try:
-        import requests
-        import io
-        import base64
-
         if img_type == 'base64':
             # Handle both "data:image/png;base64,XXXXX" and "XXXXX" formats
             if img.startswith('data:'):

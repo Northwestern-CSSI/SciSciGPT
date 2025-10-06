@@ -5,9 +5,9 @@ from pydantic import BaseModel, Field
 import pandas as pd
 import json
 
+import os
 from dotenv import load_dotenv
 load_dotenv()
-
 
 class SearchNameInput(BaseModel):
 	column: str = Field(..., description="Specifies the database column to search within. Current valid options only include `field_name` and `institution_name`.")
@@ -67,7 +67,7 @@ vectorstore_dict = {
 	namespace: PineconeVectorStore.from_existing_index(
 		embedding = OpenAIEmbeddings(model="text-embedding-3-small"),
 		namespace = namespace,
-		index_name = "sciscinet-entity"
+		index_name = os.getenv("NAME_SEARCH_INDEX")
 	) for namespace in ["field_name", "institution_name"]
 }
 

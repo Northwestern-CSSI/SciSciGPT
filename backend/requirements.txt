@@ -14,6 +14,7 @@ pinecone-plugin-inference==1.0.3
 pinecone-plugin-interface==0.0.7
 
 protobuf==5.29.5
+pydantic==2.9
 
 langchain
 langchain_community
@@ -23,7 +24,6 @@ langchain_openai
 langchain_pinecone
 langgraph
 langserve
-pydantic
 uvicorn
 
 anthropic
